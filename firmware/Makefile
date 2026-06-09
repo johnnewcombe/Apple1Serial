@@ -1,19 +1,11 @@
-# Name: apple1serial
-# Author: flovenol@gmail.com
-
 DEVICE     = atmega328p
 CLOCK      = 16000000
-PROGRAMMER = -c stk500v2 -P /dev/tty.usbmodemavrdope1
 OBJECTS    = main.o
 
-# For computing fuse byte values for other devices and options see
-# the fuse bit calculator at http://www.engbedded.com/fusecalc/
-FUSES      = -U hfuse:w:0xde:m -U lfuse:w:0xff:m -U efuse:w:0xfd:m
+MINIPRO    = minipro -p "ATMEGA328P@DIP28"
+COMPILE    = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
 
-AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
-COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
-
-all:	main.hex
+all: main.hex
 
 .c.o:
 	$(COMPILE) -c $< -o $@
@@ -24,16 +16,13 @@ all:	main.hex
 .c.s:
 	$(COMPILE) -S $< -o $@
 
-flash:	all
-	$(AVRDUDE) -U flash:w:main.hex:i
+flash: all
+	$(MINIPRO) -w main.hex -f ihex -s
 
 fuse:
-	$(AVRDUDE) $(FUSES)
+	$(MINIPRO) -w fuses.conf -c config
 
 install: flash fuse
-
-load: all
-	bootloadHID main.hex
 
 clean:
 	rm -f main.hex main.elf $(OBJECTS)
@@ -46,7 +35,7 @@ main.hex: main.elf
 	avr-objcopy -j .text -j .data -O ihex main.elf main.hex
 	avr-size --format=avr --mcu=$(DEVICE) main.elf
 
-disasm:	main.elf
+disasm: main.elf
 	avr-objdump -d main.elf
 
 cpp:
