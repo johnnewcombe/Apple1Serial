@@ -56,8 +56,8 @@
 ; ESC key
 #define ESC $1B
 ; Prompt character
-#define PROMPT  "\"
-
+;#define PROMPT "\"
+#define PROMPT $5C
 #define SPACE $20
 
 ;-------------------------------------------------------------------------
